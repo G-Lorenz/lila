@@ -7,6 +7,15 @@ export default function InfiniteScroll(selector: string) {
   });
 }
 
+let hackFixPageNumber = 1;
+const hackFixNextUrl = (url: string) => {
+  if (url.includes('/blog/community')) {
+    hackFixPageNumber++;
+    return `${url}?page=${hackFixPageNumber}`;
+  }
+  return url;
+};
+
 function register(el: HTMLElement, selector: string, backoff = 500) {
   const nav = el.querySelector('.pager') as HTMLAnchorElement | null,
     next = nav?.querySelector('.pager a') as HTMLAnchorElement | null,
@@ -29,7 +38,7 @@ function register(el: HTMLElement, selector: string, backoff = 500) {
     })
       .then(() => {
         nav.innerHTML = spinnerHtml;
-        return xhr.text(nextUrl);
+        return xhr.text(hackFixNextUrl(nextUrl));
       })
       .then(
         html => {
