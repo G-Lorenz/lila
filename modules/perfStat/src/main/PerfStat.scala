@@ -102,11 +102,17 @@ object Streaks {
   val init = Streaks(Streak.init, Streak.init)
 }
 case class Streak(v: Int, from: Option[GameAt], to: Option[GameAt]) {
-  def apply(cont: Boolean, pov: Pov)(v: Int) = if (cont) inc(pov, v) else Streak.init
+  def apply(cont: Boolean, pov: Pov)(v: Int) = if (cont) inc(pov, v) else res(pov, v)
   private def inc(pov: Pov, by: Int) =
     copy(
       v = v + by,
       from = from orElse GameAt(pov.game.createdAt, pov.gameId).some,
+      to = GameAt(pov.game.movedAt, pov.gameId).some
+    )
+  private def res(pov: Pov, by: Int) =
+    copy(
+      v = by,
+      from = GameAt(pov.game.createdAt, pov.gameId).some,
       to = GameAt(pov.game.movedAt, pov.gameId).some
     )
   def period = new Period(v * 1000L)
