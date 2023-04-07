@@ -40,6 +40,8 @@ interface Lichess {
 
   socket: any;
   sound: SoundI;
+  mic?: Voice.Microphone;
+
   miniBoard: {
     init(node: HTMLElement): void;
     initAll(parent?: HTMLElement): void;
@@ -194,6 +196,49 @@ interface LichessEditor {
   setOrientation(o: Color): void;
 }
 
+declare namespace Voice {
+  export type WordResult = Array<{
+    word: string; // WordResult, Sub, and Entry are not required for basic command dictation.
+    conf: number; // they are provided here if clients want to use a custom grammar for
+    start: number; // voiceMove-like disambiguation.
+    end: number; // see voice/@build/README.md for more info.
+  }>;
+  export type Sub = { to: string; cost: number };
+  export type Entry = { in: string; tok: string; tags: string[]; val?: string; subs?: Sub[] };
+
+  export type MsgType = 'full' | 'partial' | 'status' | 'error' | 'stop' | 'start';
+  export type ListenMode = 'full' | 'partial';
+  export type Listener = (msgText: string, msgType: MsgType, words?: WordResult) => void;
+
+  export interface Microphone {
+    setVocabulary: (vocabulary: string[], mode?: ListenMode) => Promise<void>; // required
+    setLang: (language: string) => Promise<void>; // defaults to 'en';
+
+    mode: ListenMode; // starts in full
+
+    // optional, to fetch a grammar in parallel during initialization
+    useGrammar: (grammarName: string, callback: (z: Entry[]) => void) => void;
+
+    start: () => Promise<void>; // initialize if necessary and begin recording
+    stop: () => void; // stop recording/downloading/whatever
+
+    pause: () => void; // mute mic, no overhead
+    resume: () => void; // unmute mic
+
+    readonly isBusy: boolean; // are we downloading, extracting, or loading?
+    readonly isListening: boolean; // are we recording?
+    readonly status: string; // errors, progress, or the most recent voice command
+    readonly lang: string; // defaults to 'en'
+
+    //readonly grammar: Entry[]; // optionally fetched during initialization
+
+    addListener: (id: string, listener: Listener, mode?: ListenMode) => void;
+    removeListener: (id: string) => void;
+
+    stopPropagation: () => void; // listeners can call this to stop propagation during modal interactions
+  }
+}
+
 declare namespace Editor {
   export interface Config {
     baseUrl: string;
@@ -262,6 +307,7 @@ interface Window {
   };
   readonly LichessChartRatingHistory?: any;
   readonly LichessKeyboardMove?: any;
+  readonly LichessVoicePlugin: { mic: Voice.Microphone; vosk: any };
   readonly stripeHandler: any;
   readonly Stripe: any;
   readonly Textcomplete: any;
