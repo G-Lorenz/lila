@@ -26,8 +26,8 @@ export default function (ctrl: LobbyController) {
     isBot ? undefined : tab(ctrl, 'seeks', active, [i18n.site.correspondence]),
     active === 'now_playing' || nbPlaying || isBot
       ? tab(ctrl, 'now_playing', active, [
-          ...i18n.site.nbGamesInPlay.asArray(nbPlaying, nbPlaying > 100 ? '100+' : nbPlaying.toString()),
-          myTurnPovsNb > 0 ? h('i.unread', myTurnPovsNb > 9 ? '9+' : myTurnPovsNb) : null,
+          ...i18n.site.nbGamesInPlay.asArray(nbPlaying, nbPlaying >= 100 ? '99+' : nbPlaying.toString()),
+          myTurnPovsNb > 0 ? h('i.unread', myTurnPovsNb >= 10 ? '9+' : myTurnPovsNb) : null,
         ])
       : null,
   ];
